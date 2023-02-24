@@ -1,37 +1,37 @@
-from collections import deque
-
-
 N, M, K = map(int, input().split())
-land = [[5] * N for _ in range(N)]
+soil = [[5] * N for _ in range(N)]
 s2d2 = [list(map(int, input().split())) for _ in range(N)]
-trees = deque(list(map(int, input().split())) for _ in range(M))
-dead_trees = deque()
+
+trees = [[[] for _ in range(N)] for __ in range(N)]
+for _ in range(M):
+    r, c, year = map(int, input().split())
+    trees[r - 1][c - 1].append(year)
 
 for k in range(K):
-    alive_trees = deque()
-    baby_trees = deque()
-    for tree in trees:
-        [y, x, year] = tree
-        if land[y-1][x-1] < year:
-            dead_trees.append(tree)
-        else:
-            alive_trees.append([y, x, year + 1])
-            land[y-1][x-1] -= year
-    for tree in dead_trees:
-        [y, x, year] = tree
-        land[y-1][x-1] += year // 2
-    for tree in alive_trees:
-        [y, x, year] = tree
-        if (year % 5) == 0:
-            for (r, c) in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, +1), (1, -1), (1, 0), (1, 1)]:
-                next_y, next_x = y + r, x + c
-                if 0 <= next_y - 1 < N and 0 <= next_x -1 < N:
-                    baby_trees.append([next_y, next_x, 1])
-    for i in range(N):
-        for j in range(N):
-            land[i][j] += s2d2[i][j]
-    trees = alive_trees
-    trees.extend(baby_trees)
+    next_generation = [[[] for _ in range(N)] for __ in range(N)]
+    for r in range(N):
+        for c in range(N):
+            trees[r][c].sort()
+            nutrition = 0
+            for tree in trees[r][c]:
+                if tree <= soil[r][c]:
+                    soil[r][c] -= tree
+                    tree += 1
+                    next_generation[r][c].append(tree)
+                    if tree % 5 == 0:
+                        for (y, x) in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, +1), (1, -1), (1, 0), (1, 1)]:
+                            next_r, next_c = y + r, x + c
+                            if 0 <= next_r < N and 0 <= next_c < N:
+                                next_generation[next_r][next_c].append(1)
+                else:
+                    nutrition += tree // 2
+            soil[r][c] += nutrition
+            soil[r][c] += s2d2[r][c]
+    trees = next_generation
 
+answer = 0
 
-print(len(trees))
+for r in range(N):
+    for c in range(N):
+        answer += len(trees[r][c])
+print(answer)
