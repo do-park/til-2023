@@ -33,19 +33,16 @@ for h in range(H):
             elif tomatoes[h][n][m] == 0:
                 last_tomatoes += 1
 
-result = 0
+result = 1
 
-while ripen_tomatoes and last_tomatoes > 0:
-    temp = deque()
-    while ripen_tomatoes:
-        [h, n, m] = ripen_tomatoes.popleft()
-        for (dz, dy, dx) in zip(dzs, dys, dxs):
-            next_h, next_n, next_m = h + dz, n + dy, m + dx
-            if 0 <= next_h < H and 0 <= next_n < N and 0 <= next_m < M and tomatoes[next_h][next_n][next_m] == 0:
-                temp.append([next_h, next_n, next_m])
-                tomatoes[next_h][next_n][next_m] = 1
-                last_tomatoes -= 1
-    result += 1
-    ripen_tomatoes = temp
+while ripen_tomatoes:
+    [h, n, m] = ripen_tomatoes.popleft()
+    for (dz, dy, dx) in zip(dzs, dys, dxs):
+        next_h, next_n, next_m = h + dz, n + dy, m + dx
+        if 0 <= next_h < H and 0 <= next_n < N and 0 <= next_m < M and tomatoes[next_h][next_n][next_m] == 0:
+            ripen_tomatoes.append([next_h, next_n, next_m])
+            tomatoes[next_h][next_n][next_m] = tomatoes[h][n][m] + 1
+            last_tomatoes -= 1
+            result = result if tomatoes[next_h][next_n][next_m] <= result else tomatoes[next_h][next_n][next_m]
 
-print(-1 if last_tomatoes > 0 else result)
+print(-1 if last_tomatoes > 0 else result - 1)
