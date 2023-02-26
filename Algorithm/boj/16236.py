@@ -20,45 +20,52 @@
 from collections import deque
 
 
-Q = deque()
-dys = [-1, 0, 0, 1]
-dxs = [0, -1, 1, 0]
-
+dys = [-1, 0, 1, 0]
+dxs = [0, -1, 0, 1]
 
 N = int(input())
 ocean = [list(map(int, input().split())) for _ in range(N)]
-visited = [[0] * N for _ in range(N)]
 size_of_shark = 2
 exp = 0
+visited = [[0] * N for _ in range(N)]
+Q = deque()
 answer = 0
 
 for j in range(N):
     for i in range(N):
         if ocean[j][i] == 9:
-            Q.append((0, j, i))
+            Q.append((j, i))
             visited[j][i] = 1
             ocean[j][i] = 0
 
-while Q:
-    (dist, y, x) = Q.popleft()
-    if 0 < ocean[y][x] < size_of_shark:
-        answer += dist
-        ocean[y][x] = 0
-        dist = 0
-        Q = deque()
-        visited = [[0] * N for _ in range(N)]
-        visited[y][x] = 1
-        exp += 1
-        if size_of_shark == exp:
-            size_of_shark += 1
-            exp = 0
+while True:
+    while Q:
+        (j, i) = Q.popleft()
+        for (dy, dx) in zip(dys, dxs):
+            ny, nx = j + dy, i + dx
+            if 0 <= ny < N and 0 <= nx < N and visited[ny][nx] == 0 and ocean[ny][nx] <= size_of_shark:
+                visited[ny][nx] = visited[j][i] + 1
+                Q.append((ny, nx))
 
-    for (dy, dx) in zip(dys, dxs):
-        ny, nx = y + dy, x + dx
-        if 0 <= ny < N and 0 <= nx < N and visited[ny][nx] == 0:
-            if 0 <= ocean[ny][nx] <= size_of_shark:
-                Q.append((dist + 1, ny, nx))
-            visited[ny][nx] = 1
-    Q = deque(sorted(Q))
+    dist = 987654321
+    sy, sx = -1, -1
+
+    for j in range(N):
+        for i in range(N):
+            if 0 < visited[j][i] < dist and 0 < ocean[j][i] < size_of_shark:
+                dist, sy, sx = visited[j][i], j, i
+
+    if dist == 987654321:
+        break
+
+    Q.append((sy, sx))
+    visited = [[0] * N for _ in range(N)]
+    visited[sy][sx] = 1
+    ocean[sy][sx] = 0
+    answer += dist - 1
+    exp += 1
+    if exp == size_of_shark:
+        size_of_shark += 1
+        exp = 0
 
 print(answer)
