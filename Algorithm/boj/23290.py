@@ -15,6 +15,7 @@
 # 4. 두 번 전 연습에서 생긴 물고기의 냄새가 격자에서 사라진다.
 # 5. 1에서 사용한 복제 마법이 완료된다. 모든 복제된 물고기는 1에서의 위치와 방향을 그대로 갖게 된다.
 from itertools import product
+import copy
 
 dys = [0, -1, -1, -1, 0, 1, 1, 1]
 dxs = [-1, -1, 0, 1, 1, 1, 0, -1]
@@ -33,6 +34,7 @@ shark[0], shark[1] = shark[0]-1, shark[1]-1
 
 for s in range(S):
     matrix = [[[] * 4 for _ in range(4)] for __ in range(4)]
+
     # 1
     new_fishes = fishes
     # 2
@@ -47,20 +49,25 @@ for s in range(S):
         else:
             matrix[y][x].append(d)
 
+    # 4
+    for y in range(4):
+        for x in range(4):
+            visited[y][x] = visited[y][x]-1 if visited[y][x] else visited[y][x]
+
     # 3
     shark_d = [(-1, 0), (0, -1), (1, 0), (0, 1)]
     largest_pp = (-1, -1, -1)
-    largest_total = 0
+    largest_total = -1
     for pp in product([0, 1, 2, 3], repeat=3):
-        temp = matrix
-        ny, nx = shark[0], shark[1]
+        temp = copy.deepcopy(matrix)
+        sy, sx = shark[0], shark[1]
         total = 0
         for p in pp:
             dy, dx = shark_d[p]
-            ny, nx = ny + dy, nx + dx
-            if 0 <= ny < 4 and 0 <= nx < 4:
-                total += len(temp[ny][nx])
-                temp[ny][nx] = []
+            sy, sx = sy + dy, sx + dx
+            if 0 <= sy < 4 and 0 <= sx < 4:
+                total += len(temp[sy][sx])
+                temp[sy][sx] = []
             else:
                 break
         else:
@@ -72,15 +79,17 @@ for s in range(S):
     for p in largest_pp:
         dy, dx = shark_d[p]
         ny, nx = ny + dy, nx + dx
+        if len(matrix[ny][nx]) > 0:
+            matrix[ny][nx] = []
+            visited[ny][nx] = 2
+    shark = [ny, nx]
 
-
-
-
-    # 4
+    # 5
     for y in range(4):
         for x in range(4):
-            if matrix[y][x]:
-                for fish in matrix[y][x]:
-                    new_fishes.append((y, x, fish))
-    fish = new_fishes
+            for d in matrix[y][x]:
+                new_fishes.append((y, x, d))
 
+    fishes = new_fishes
+
+print(len(fishes))
