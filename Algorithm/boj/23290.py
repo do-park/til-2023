@@ -25,29 +25,29 @@ visited = [[0]*4 for _ in range(4)]
 M, S = map(int, input().split())
 # 물고기의 정보 (y, x, d) 위치 (y, x) 방향 d
 # 상어 정보 (y, x)
+matrix = [[[0]*8 for _ in range(4)] for __ in range(4)]
 fishes = []
 for _ in range(M):
     y, x, d = map(int, input().split())
-    fishes.append((y-1, x-1, d-1 if d > 0 else 7))
+    matrix[y-1][x-1][d-1 if d > 0 else 7] += 1
 shark = list(map(int, input().split()))
 shark[0], shark[1] = shark[0]-1, shark[1]-1
 
 for s in range(S):
-    matrix = [[[] * 4 for _ in range(4)] for __ in range(4)]
-
     # 1
-    new_fishes = fishes
+    new_matrix =[[[0]*8 for _ in range(4)] for __ in range(4)]
     # 2
-    for fish in fishes:
-        (y, x, d) = fish
-        for n in range(8):
-            nd = (d-n) % 8
-            ny, nx = y + dys[nd], x + dxs[nd]
-            if 0 <= ny < 4 and 0 <= nx < 4 and not visited[ny][nx] and [ny, nx] != shark:
-                matrix[ny][nx].append(nd)
-                break
-        else:
-            matrix[y][x].append(d)
+    for y in range(4):
+        for x in range(4):
+            for d in range(8):
+                for n in range(8):
+                    nd = (d-n) % 8
+                    ny, nx = y + dys[nd], x + dxs[nd]
+                    if 0 <= ny < 4 and 0 <= nx < 4 and not visited[ny][nx] and [ny, nx] != shark:
+                        new_matrix[ny][nx][nd] += matrix[y][x][d]
+                        break
+                else:
+                    new_matrix[y][x][d] += matrix[y][x][d]
 
     # 4
     for y in range(4):
@@ -59,15 +59,15 @@ for s in range(S):
     largest_pp = (-1, -1, -1)
     largest_total = -1
     for pp in product([0, 1, 2, 3], repeat=3):
-        temp = copy.deepcopy(matrix)
+        temp = copy.deepcopy(new_matrix)
         sy, sx = shark[0], shark[1]
         total = 0
         for p in pp:
             dy, dx = shark_d[p]
             sy, sx = sy + dy, sx + dx
             if 0 <= sy < 4 and 0 <= sx < 4:
-                total += len(temp[sy][sx])
-                temp[sy][sx] = []
+                total += sum(temp[sy][sx])
+                temp[sy][sx] = [0]*8
             else:
                 break
         else:
@@ -79,17 +79,20 @@ for s in range(S):
     for p in largest_pp:
         dy, dx = shark_d[p]
         ny, nx = ny + dy, nx + dx
-        if len(matrix[ny][nx]) > 0:
-            matrix[ny][nx] = []
+        if sum(new_matrix[ny][nx]) > 0:
+            new_matrix[ny][nx] = [0]*8
             visited[ny][nx] = 2
     shark = [ny, nx]
 
     # 5
     for y in range(4):
         for x in range(4):
-            for d in matrix[y][x]:
-                new_fishes.append((y, x, d))
+            for d in range(8):
+                matrix[y][x][d] += new_matrix[y][x][d]
 
-    fishes = new_fishes
+result = 0
+for i in range(4):
+    for j in range(4):
+        result += sum(matrix[i][j])
 
-print(len(fishes))
+print(result)
