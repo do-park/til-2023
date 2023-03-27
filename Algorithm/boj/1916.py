@@ -14,14 +14,12 @@ start, end = map(int, input().split())
 start, end = start-1, end-1
 
 result[start] = 0
-for route in routes[start]:
-    heappush(hq, route)
+heappush(hq, [0, start])
 
 while hq:
     cost, dist = heappop(hq)
     if result[dist] < cost:
         continue
-    result[dist] = cost
     for (c, d) in routes[dist]:
         c += cost
         if result[d] > c:
